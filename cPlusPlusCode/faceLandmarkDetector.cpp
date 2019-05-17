@@ -11,13 +11,15 @@ using namespace dlib;
 //draw points on the image
 void drawPoints(cv::Mat &image, full_object_detection landmarks){
     for(int i=0; i<landmarks.num_parts(); i++){
-        cv::circle(image, cv::Point(landmarks.part(i).x(), landmarks.part(i).y()), 3, cv::Scalar(0, 0, 255), 1);
+        cv::circle(image, cv::Point(landmarks.part(i).x(), landmarks.part(i).y()), 3, cv::Scalar(0, 255, 255), -1);
     }
 }
 
 int main(){
     //get face detector
     frontal_face_detector faceDetector = get_frontal_face_detector();
+
+    //define landmark detector
     shape_predictor landmarkDetector;
 
     //load the face landmark model

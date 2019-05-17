@@ -1,46 +1,58 @@
 import cv2
+import dlib
 import sys
 import numpy as np
 
-#read image
-image = cv2.imread("../assets/anish.jpg")
+def drawPoints(image, landmarks):
+    for part in landmarks.parts():
+        cv2.circle(image, (part.x, part.y), 3, (0, 255, 255), -1)
 
-#check if image exists
-if image is None:
-    print("can not find image")
-    exit()
+#define face detector
+faceDetector = dlib.get_frontal_face_detector()
 
-#convert to gray scale
-grayImage = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+#define landmark detector and load the landmark model
+landmarkDetector = dlib.shape_predictor("../dlibAndModel/shape_predictor_68_face_landmarks.dat")
 
-#apply gaussian blur
-grayImage = cv2.GaussianBlur(grayImage, (3, 3), 0)
+#read images with single and multiple persons
+imageSingle = cv2.imread("../assets/anish.jpg")
+imageMultiple = cv2.imread("../assets/anish2.jpg")
 
-#detect edges
-edgeImage = cv2.Laplacian(grayImage, -1, ksize=5)
-edgeImage = 255 - edgeImage
+#create images clone to woek on
+imageSingleClone = imageSingle.copy()
+imageMultipleClone = imageMultiple.copy()
 
-#threshold image
-ret, edgeImage = cv2.threshold(edgeImage, 150, 255, cv2.THRESH_BINARY)
+#convert image to dlibs image format
+dlibSingleImage = cv2.cvtColor(imageSingleClone, cv2.COLOR_BGR2RGB)
+dlibMultipleImage = cv2.cvtColor(imageMultipleClone, cv2.COLOR_BGR2RGB)
 
-#blur images heavily using edgePreservingFilter
-edgePreservingImage = cv2.edgePreservingFilter(image, flags=2, sigma_s=50, sigma_r=0.4)
+#detect faces in the image
+facesSingle = faceDetector(dlibSingleImage, 0)
+facesMultiple = faceDetector(dlibMultipleImage, 0)
 
-#create output matrix
-output =np.zeros(grayImage.shape)
+#loop over all the faces detected
+for i in range(0, len(facesSingle)):
+    dlibRect = dlib.rectangle(int(facesSingle[i].left()), int(facesSingle[i].top()), int(facesSingle[i].right()), int(facesSingle[i].bottom()))
+    landmarks = landmarkDetector(dlibSingleImage, dlibRect)
+    drawPoints(imageSingleClone, landmarks)
 
-#combine cartoon image and edges image
-output = cv2.bitwise_and(edgePreservingImage, edgePreservingImage, mask=edgeImage)
+for i in range(0, len(facesMultiple)):
+    dlibRect = dlib.rectangle(int(facesMultiple[i].left()), int(facesMultiple[i].top()), int(facesMultiple[i].right()), int(facesMultiple[i].bottom()))
+    landmarks = landmarkDetector(dlibMultipleImage, dlibRect)
+    drawPoints(imageMultipleClone, landmarks)
 
 #create windows to display images
-cv2.namedWindow("image", cv2.WINDOW_AUTOSIZE)
-cv2.namedWindow("cartoon", cv2.WINDOW_AUTOSIZE)
+cv2.namedWindow("single person image", cv2.WINDOW_NORMAL)
+cv2.namedWindow("single person landmarks", cv2.WINDOW_NORMAL)
+cv2.namedWindow("multiple person image", cv2.WINDOW_NORMAL)
+cv2.namedWindow("multiple person landmarks", cv2.WINDOW_NORMAL)
 
 #display images
-cv2.imshow("image", image)
-cv2.imshow("cartoon", output)
+cv2.imshow("single person image", imageSingle)
+cv2.imshow("single person landmarks", imageSingleClone)
+cv2.imshow("multiple person image", imageMultiple)
+cv2.imshow("multiple person landmarks", imageMultipleClone)
 
-#press esc to exit program
+#press esc to exit the program
 cv2.waitKey(0)
 
 #close all the opened windows
