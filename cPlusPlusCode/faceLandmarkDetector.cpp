@@ -8,7 +8,7 @@
 using namespace std;
 using namespace dlib;
 
-//draw points on the image
+//draw landmark points on the image
 void drawPoints(cv::Mat &image, full_object_detection landmarks){
     for(int i=0; i<landmarks.num_parts(); i++){
         cv::circle(image, cv::Point(landmarks.part(i).x(), landmarks.part(i).y()), 3, cv::Scalar(0, 255, 255), -1);
@@ -16,7 +16,7 @@ void drawPoints(cv::Mat &image, full_object_detection landmarks){
 }
 
 int main(){
-    //get face detector
+    //define face detector
     frontal_face_detector faceDetector = get_frontal_face_detector();
 
     //define landmark detector
@@ -41,19 +41,21 @@ int main(){
     std::vector<rectangle> facesSingle = faceDetector(dlibSingleImage);
     std::vector<rectangle> facesMultiple = faceDetector(dlibMultipleImage);
 
-    //vector to store face landmarks for all the faces
-    std::vector<full_object_detection> faceLandmarksSingle;
-    std::vector<full_object_detection> faceLandmarksMultiple;
-
     //Loop over all the faces detected and find face landmarks for all of them
     for(int i=0; i<facesSingle.size(); i++){
+        //for each face run landmark detector
         full_object_detection landmarks = landmarkDetector(dlibSingleImage, facesSingle[i]);
-        faceLandmarksSingle.push_back(landmarks);
+        //Print number of landmark point detected
+        cout<<"Number of landmark points detected: "<<landmarks.num_parts()<<endl;
+        //draw landmarks on the face
         drawPoints(imageSingleClone, landmarks);
     }
     for(int i=0; i<facesMultiple.size(); i++){
+        //for each face run landmark detector
         full_object_detection landmarks = landmarkDetector(dlibMultipleImage, facesMultiple[i]);
-        faceLandmarksMultiple.push_back(landmarks);
+        //Print number of landmark point detected
+        cout<<"Number of landmark points detected: "<<landmarks.num_parts()<<endl;
+        //draw landmarks on the face
         drawPoints(imageMultipleClone, landmarks);
     }
 

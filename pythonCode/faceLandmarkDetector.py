@@ -3,6 +3,7 @@ import dlib
 import sys
 import numpy as np
 
+#draw landmark points on the image
 def drawPoints(image, landmarks):
     for part in landmarks.parts():
         cv2.circle(image, (part.x, part.y), 3, (0, 255, 255), -1)
@@ -32,12 +33,20 @@ facesMultiple = faceDetector(dlibMultipleImage, 0)
 #loop over all the faces detected
 for i in range(0, len(facesSingle)):
     dlibRect = dlib.rectangle(int(facesSingle[i].left()), int(facesSingle[i].top()), int(facesSingle[i].right()), int(facesSingle[i].bottom()))
+    #for each face run landmark detector
     landmarks = landmarkDetector(dlibSingleImage, dlibRect)
+    #Print number of landmark point detected
+    print("Number of landmark points detected: ", len(landmarks.parts()))
+    #draw landmarks on the face
     drawPoints(imageSingleClone, landmarks)
 
 for i in range(0, len(facesMultiple)):
     dlibRect = dlib.rectangle(int(facesMultiple[i].left()), int(facesMultiple[i].top()), int(facesMultiple[i].right()), int(facesMultiple[i].bottom()))
+    #for each face run landmark detector
     landmarks = landmarkDetector(dlibMultipleImage, dlibRect)
+    #Print number of landmark point detected
+    print("Number of landmark points detected: ", len(landmarks.parts()))
+    #draw landmarks on the face
     drawPoints(imageMultipleClone, landmarks)
 
 #create windows to display images
